@@ -19,5 +19,4 @@ buildah run --env container=1 "$WORKING_CONTAINER" -- sh -c "exec -a ignition-li
 buildah commit "$WORKING_CONTAINER" with-ignition
 buildah copy "$WORKING_CONTAINER" treefile.yaml "$TEST_TREEFILE_PATH"
 buildah run "$WORKING_CONTAINER" rpm-ostree compose container "$TEST_TREEFILE_PATH"
-buildah commit "$WORKING_CONTAINER" layer1
 buildah commit "$WORKING_CONTAINER" with-rpms
