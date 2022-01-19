@@ -51,7 +51,9 @@ ensure_fcos() {
     buildah run ignition-builder dnf install -y make libblkid-devel go
     buildah commit ignition-builder ignition-builder
   fi
-  podman run -v "$PWD":/coreos-derive localhost/ignition-builder make -C /coreos-derive/ignition install DESTDIR="/coreos-derive/fcos/overrides/rootfs"
+  
+  #--security-opt label=disable is necessary if selinux is enabled, otherwise don't have perms to the directory
+  podman run -v "$PWD":/coreos-derive --security-opt label=disable localhost/ignition-builder make -C /coreos-derive/ignition install DESTDIR="/coreos-derive/fcos/overrides/rootfs"
 
   curl --create-dirs  --output-dir "$FCOS/overrides/rpm" -O https://jenkins-coreos-ci.apps.ocp.ci.centos.org/job/github-ci/job/coreos/job/rpm-ostree/job/PR-3340/3/artifact/rpm-ostree-2022.1.41.gc1bd10d2-1.fc35.x86_64.rpm 
   curl --output-dir "$FCOS/overrides/rpm" -O https://jenkins-coreos-ci.apps.ocp.ci.centos.org/job/github-ci/job/coreos/job/rpm-ostree/job/PR-3340/3/artifact/rpm-ostree-libs-2022.1.41.gc1bd10d2-1.fc35.x86_64.rpm
