@@ -18,7 +18,5 @@ buildah copy "$WORKING_CONTAINER" test.ign "$TEST_IGN_PATH"
 buildah run --env container=1 "$WORKING_CONTAINER" -- sh -c "exec -a ignition-liveapply $IGNITION $TEST_IGN_PATH"
 buildah commit "$WORKING_CONTAINER" with-ignition
 
-# JNK: ignition-liveapply should be laying this down now 
-# buildah copy "$WORKING_CONTAINER" treefile.yaml "$TEST_TREEFILE_PATH"
 buildah run "$WORKING_CONTAINER" rpm-ostree compose container "$TEST_TREEFILE_PATH"
 buildah commit "$WORKING_CONTAINER" with-rpms
