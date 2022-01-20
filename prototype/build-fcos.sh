@@ -44,16 +44,21 @@ ensure_fcos() {
     cosa fetch
   popd
   
-  git clone -b pr/apply --single-branch https://github.com/jlebon/ignition
+  # build custom Ignition and Butane
 
-  if ! skopeo inspect containers-storage:localhost/ignition-builder &> /dev/null; then
-    buildah from --name ignition-builder registry.fedoraproject.org/fedora-toolbox
-    buildah run ignition-builder dnf install -y make libblkid-devel go
-    buildah commit ignition-builder ignition-builder
+  if ! skopeo inspect containers-storage:localhost/"$BUILDER" &> /dev/null; then
+    buildah from --name "$BUILDER" registry.fedoraproject.org/fedora-toolbox
+    buildah run "$BUILDER" dnf install -y make libblkid-devel go
+    buildah commit "$BUILDER" "$BUILDER"
   fi
-  
+
+  git clone -b pr/apply --single-branch https://github.com/jlebon/ignition
   #--security-opt label=disable is necessary if selinux is enabled, otherwise don't have perms to the directory
-  podman run -v "$PWD":/coreos-derive --security-opt label=disable localhost/ignition-builder make -C /coreos-derive/ignition install DESTDIR="/coreos-derive/fcos/overrides/rootfs"
+  podman run -v "$PWD":/coreos-derive --security-opt label=disable localhost/"$BUILDER" make -C /coreos-derive/ignition install DESTDIR="/coreos-derive/fcos/overrides/rootfs"
+
+  git clone -b layer-packages --single-branch https://github.com/jmarrero/butane
+  podman run -v "$PWD":/coreos-derive --security-opt label=disable localhost/"$BUILDER" bash "cd /coreos-derive/butane && ./build && cp ./bin/amd64/butane ../fcos/overrides/rootfs/usr/bin/butane"
+
 
   curl --create-dirs  --output-dir "$FCOS/overrides/rpm" -O https://jenkins-coreos-ci.apps.ocp.ci.centos.org/job/github-ci/job/coreos/job/rpm-ostree/job/PR-3340/3/artifact/rpm-ostree-2022.1.41.gc1bd10d2-1.fc35.x86_64.rpm 
   curl --output-dir "$FCOS/overrides/rpm" -O https://jenkins-coreos-ci.apps.ocp.ci.centos.org/job/github-ci/job/coreos/job/rpm-ostree/job/PR-3340/3/artifact/rpm-ostree-libs-2022.1.41.gc1bd10d2-1.fc35.x86_64.rpm
