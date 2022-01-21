@@ -1,0 +1,8 @@
+variant: fcos
+version: 1.5.0-experimental
+extensions:
+  - ltrace
+storage:
+  files:
+    - path: /etc/test
+      mode: 0644

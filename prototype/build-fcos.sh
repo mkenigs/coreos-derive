@@ -57,7 +57,7 @@ ensure_fcos() {
   podman run -v "$PWD":/coreos-derive --security-opt label=disable localhost/"$BUILDER" make -C /coreos-derive/ignition install DESTDIR="/coreos-derive/fcos/overrides/rootfs"
 
   git clone -b layer-packages --single-branch https://github.com/jmarrero/butane
-  podman run -v "$PWD":/coreos-derive --security-opt label=disable localhost/"$BUILDER" bash "cd /coreos-derive/butane && ./build && cp ./bin/amd64/butane ../fcos/overrides/rootfs/usr/bin/butane"
+  podman run -v "$PWD":/coreos-derive --security-opt label=disable localhost/"$BUILDER" bash -c "cd /coreos-derive/butane && ./build && cp ./bin/amd64/butane ../fcos/overrides/rootfs/usr/bin/butane"
 
 
   curl --create-dirs  --output-dir "$FCOS/overrides/rpm" -O https://jenkins-coreos-ci.apps.ocp.ci.centos.org/job/github-ci/job/coreos/job/rpm-ostree/job/PR-3340/3/artifact/rpm-ostree-2022.1.41.gc1bd10d2-1.fc35.x86_64.rpm 
