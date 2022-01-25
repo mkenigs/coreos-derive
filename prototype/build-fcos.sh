@@ -36,12 +36,7 @@ cosa() {
    set -eu
 }
 
-ensure_fcos() {
-
-  if skopeo inspect "$FCOS_IMAGE" &> /dev/null; then
-    return
-  fi
-
+build_fcos() {
   mkdir "$FCOS"
   pushd "$FCOS"
     cosa init https://github.com/coreos/fedora-coreos-config
@@ -71,6 +66,8 @@ ensure_fcos() {
   pushd "$FCOS"
     cosa build
   popd
+}
 
+push_fcos() {
   skopeo copy oci-archive:$(ls "$FCOS"/builds/latest/x86_64/*.ociarchive) "$FCOS_IMAGE"
 }

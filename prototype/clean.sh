@@ -2,7 +2,6 @@
 set -x  
 source ./variables.sh
 
-podman image rm localhost/fcos -f 
 podman image rm localhost/"$BUILDER" -f
 podman rm "$BUILDER"
 rm -rf ./ignition
