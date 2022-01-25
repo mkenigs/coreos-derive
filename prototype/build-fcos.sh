@@ -1,8 +1,12 @@
 #!/usr/bin/env bash
 
+set -euxo pipefail
+
 source ./variables.sh
 
 FCOS="$PWD/fcos"
+RPM_OSTREE_URL=https://jenkins-coreos-ci.apps.ocp.ci.centos.org/job/github-ci/job/coreos/job/rpm-ostree/job/main/1/artifact/rpm-ostree-2022.1.67.ge0636655-1.fc35.x86_64.rpm
+RPM_OSTREE_LIBS_URL=https://jenkins-coreos-ci.apps.ocp.ci.centos.org/job/github-ci/job/coreos/job/rpm-ostree/job/main/1/artifact/rpm-ostree-libs-2022.1.67.ge0636655-1.fc35.x86_64.rpm
 
 cosa() {
    set +eu
@@ -56,12 +60,13 @@ ensure_fcos() {
   #--security-opt label=disable is necessary if selinux is enabled, otherwise don't have perms to the directory
   podman run -v "$PWD":/coreos-derive --security-opt label=disable localhost/"$BUILDER" make -C /coreos-derive/ignition install DESTDIR="/coreos-derive/fcos/overrides/rootfs"
 
-  git clone -b layer-packages --single-branch https://github.com/jmarrero/butane
+  git clone --single-branch https://github.com/coreos/butane
   podman run -v "$PWD":/coreos-derive --security-opt label=disable localhost/"$BUILDER" bash -c "cd /coreos-derive/butane && ./build && cp ./bin/amd64/butane ../fcos/overrides/rootfs/usr/bin/butane"
 
 
-  curl --create-dirs  --output-dir "$FCOS/overrides/rpm" -O https://jenkins-coreos-ci.apps.ocp.ci.centos.org/job/github-ci/job/coreos/job/rpm-ostree/job/PR-3340/3/artifact/rpm-ostree-2022.1.41.gc1bd10d2-1.fc35.x86_64.rpm 
-  curl --output-dir "$FCOS/overrides/rpm" -O https://jenkins-coreos-ci.apps.ocp.ci.centos.org/job/github-ci/job/coreos/job/rpm-ostree/job/PR-3340/3/artifact/rpm-ostree-libs-2022.1.41.gc1bd10d2-1.fc35.x86_64.rpm
+  # override rpm-ostree
+  curl --create-dirs  --output-dir "$FCOS/overrides/rpm" -O "$RPM_OSTREE_URL"
+  curl --output-dir "$FCOS/overrides/rpm" -O "$RPM_OSTREE_LIBS_URL"
   
   pushd "$FCOS"
     cosa build
